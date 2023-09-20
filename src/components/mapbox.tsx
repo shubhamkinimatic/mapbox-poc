@@ -11,6 +11,8 @@ import type { FeatureCollection } from "geojson";
 import {
   clusterCountLayer,
   clusterLayer,
+  focusCurrentPoint,
+  getCurrentPoint,
   unclusteredPointLayer,
 } from "./layers";
 
@@ -162,7 +164,7 @@ const Mapbox = () => {
     <>
       <div className="flex justify-around">
         <div>
-          {data.features.map((feature) => (
+          {data.features.map((feature, i) => (
             <p
               className={`border p-2 mx-4 my-2 cursor-pointer ${
                 activeCity.name === feature?.properties?.name &&
@@ -178,7 +180,7 @@ const Mapbox = () => {
                 // @ts-ignore
                 setActiveCity(feature?.properties);
               }}
-              key={feature.id}
+              key={i}
             >
               {feature?.properties?.name}
             </p>
@@ -194,16 +196,16 @@ const Mapbox = () => {
             zoom: 3.5,
           }}
           style={{ width: 1000, height: 600 }}
-          maxZoom={10}
           mapStyle="mapbox://styles/mapbox/light-v11"
-          scrollZoom={false}
-          boxZoom={false}
-          dragRotate={false}
-          dragPan={false}
-          keyboard={false}
-          doubleClickZoom={false}
-          touchZoomRotate={false}
-          touchPitch={false}
+          // maxZoom={10}
+          // scrollZoom={false}
+          // boxZoom={false}
+          // dragRotate={false}
+          // dragPan={false}
+          // keyboard={false}
+          // doubleClickZoom={false}
+          // touchZoomRotate={false}
+          // touchPitch={false}
         >
           <Source
             id="my-data"
@@ -216,6 +218,7 @@ const Mapbox = () => {
             <Layer {...clusterLayer} />
             <Layer {...clusterCountLayer} />
             <Layer {...unclusteredPointLayer} />
+            <Layer {...getCurrentPoint(activeCity.name)} />
           </Source>
         </Map>
       </div>
