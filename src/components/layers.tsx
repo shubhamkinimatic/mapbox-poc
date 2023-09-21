@@ -44,7 +44,10 @@ export const unclusteredPointLayer: LayerProps = {
   },
 };
 
-export const getCurrentPoint = (city: string): LayerProps => {
+export const getCurrentPoint = (
+  city: string,
+  initialTranslate: number
+): LayerProps => {
   return {
     id: "current-point",
     type: "circle",
@@ -53,21 +56,10 @@ export const getCurrentPoint = (city: string): LayerProps => {
     paint: {
       "circle-color": "#aaffaa",
       "circle-radius": 6,
+      "circle-translate": [0, initialTranslate],
+      "circle-translate-transition": { duration: 10 },
       "circle-stroke-width": 1,
-      "circle-stroke-color": "#fff",
+      "circle-stroke-color": "#000",
     },
   };
-};
-
-export const focusCurrentPoint: LayerProps = {
-  id: "current-point",
-  type: "circle",
-  source: "earthquakes",
-  filter: ["==", "name", "Dallas"],
-  paint: {
-    "circle-color": "#aaffaa",
-    "circle-radius": 6,
-    "circle-stroke-width": 1,
-    "circle-stroke-color": "#fff",
-  },
 };

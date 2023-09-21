@@ -1,4 +1,10 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Map, {
   CircleLayer,
   Layer,
@@ -11,10 +17,10 @@ import type { FeatureCollection } from "geojson";
 import {
   clusterCountLayer,
   clusterLayer,
-  focusCurrentPoint,
   getCurrentPoint,
   unclusteredPointLayer,
 } from "./layers";
+import Pin from "./pin";
 
 const geojson: FeatureCollection = {
   type: "FeatureCollection",
@@ -139,8 +145,16 @@ const geojson: FeatureCollection = {
   ],
 };
 
+// TODO -
+// Insert Marker to allow clicking
+// Zoom on click cluster
+
 const Mapbox = () => {
   const [data, setData] = useState(geojson);
+  const [popupInfo, setPopupInfo] = useState(null);
+
+  const [hoverInfo, setHoverInfo] = useState(null);
+
   const [activeCity, setActiveCity] = useState({
     name: "Dallas",
     region: "South",
@@ -148,6 +162,17 @@ const Mapbox = () => {
     area: "343 km²",
   });
   const mapRef = useRef<MapRef>();
+
+  const [translate, setTranslate] = useState(0);
+
+  useEffect(() => {
+    const clear = setInterval(() => {
+      const buf = 10 * -1;
+      setTranslate((i) => (i - buf) * -1);
+    }, 500);
+
+    return () => clearTimeout(clear);
+  }, []);
 
   const onSelectCity = useCallback(
     ({ longitude, latitude }: { longitude: any; latitude: any }) => {
@@ -159,6 +184,31 @@ const Mapbox = () => {
     },
     []
   );
+
+  // @ts-ignore
+  const onHover = useCallback((event) => {
+    const {
+      features,
+      point: { x, y },
+      lngLat: { lng, lat },
+    } = event;
+    const hoveredFeature = features && features[0];
+
+    // prettier-ignore
+    setHoverInfo(hoveredFeature && {feature: hoveredFeature, x, y});
+
+    const acti = hoveredFeature && hoveredFeature.properties;
+
+    console.log(event);
+    acti && setActiveCity(acti);
+    acti &&
+      onSelectCity({
+        longitude: lng,
+        latitude: lat,
+      });
+  }, []);
+
+  console.log(hoverInfo);
 
   return (
     <>
@@ -197,7 +247,10 @@ const Mapbox = () => {
           }}
           style={{ width: 1000, height: 600 }}
           mapStyle="mapbox://styles/mapbox/light-v11"
-          // maxZoom={10}
+          interactiveLayerIds={["unclustered-point"]}
+          // onMouseMove={onHover}
+          onClick={onHover}
+          maxZoom={10}
           // scrollZoom={false}
           // boxZoom={false}
           // dragRotate={false}
@@ -218,7 +271,7 @@ const Mapbox = () => {
             <Layer {...clusterLayer} />
             <Layer {...clusterCountLayer} />
             <Layer {...unclusteredPointLayer} />
-            <Layer {...getCurrentPoint(activeCity.name)} />
+            <Layer {...getCurrentPoint(activeCity.name, translate)} />
           </Source>
         </Map>
       </div>
